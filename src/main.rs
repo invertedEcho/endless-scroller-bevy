@@ -55,7 +55,7 @@ fn main() {
         .add_systems(
             Update,
             (
-                // handle_scrolling_background,
+                handle_scrolling_background,
                 on_resize_system,
                 redraw_background_system,
             ),

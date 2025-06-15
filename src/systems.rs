@@ -4,20 +4,7 @@ use crate::{RedrawBackgroundEvent, WindowDimensions, components::ScrollingBackgr
 
 const SCROLLING_SPEED: f32 = 100.0;
 
-const BACKGROUND_LAYERS: [&str; 12] = [
-    "Layer_0000_9.png",
-    "Layer_0001_8.png",
-    "Layer_0002_7.png",
-    "Layer_0003_6.png",
-    "Layer_0004_Lights.png",
-    "Layer_0005_5.png",
-    "Layer_0006_4.png",
-    "Layer_0007_Lights.png",
-    "Layer_0008_3.png",
-    "Layer_0009_2.png",
-    "Layer_0010_1.png",
-    "Layer_0011_0.png",
-];
+const BACKGROUND_IMAGE_PATH: &str = "sprites/background.png";
 
 pub fn spawn_entire_background_image_from_layers(
     mut commands: Commands,
@@ -25,71 +12,45 @@ pub fn spawn_entire_background_image_from_layers(
     window_dimensions: Res<WindowDimensions>,
 ) {
     let window_height = window_dimensions.height;
+    let window_width = window_dimensions.width;
 
-    for n in 0..BACKGROUND_LAYERS.len() {
-        let reverse_index = BACKGROUND_LAYERS.len() - n - 1;
-        println!("{}", reverse_index);
+    let image_size = imagesize::size(format!("assets/{}", BACKGROUND_IMAGE_PATH))
+        .expect("Can get image_size for BACKGROUND_IMAGE");
+    let image_width = image_size.width as f32;
+    let image_height = image_size.height as f32;
 
-        let background_layer = BACKGROUND_LAYERS[reverse_index];
-        let relative_path_for_background_layer = format!("assets/sprites/{}", background_layer);
+    let scale = window_height / image_height;
+    let scaled_image_width = image_width * scale;
 
-        println!("{}", relative_path_for_background_layer);
+    println!("image_width: {}", image_width);
+    println!("scale: {}", scale);
+    println!("scaled_image_width: {}", scaled_image_width);
 
-        let image_size =
-            imagesize::size(relative_path_for_background_layer).expect("Can get image size");
+    println!("window height: {}", window_height);
+    println!("window width: {}", window_dimensions.width);
 
-        let image_width = image_size.width as f32;
-        let image_height = image_size.height as f32;
+    let num_tiles = (window_width / scaled_image_width).ceil() as usize + 1;
+    println!("num_tiles: {}", num_tiles);
 
-        println!("image_width: {}", image_width);
-        println!("window height: {}", window_height);
+    let left_edge = -window_width / 2.0;
 
-        let scale = window_height / image_height;
-        let scaled_image_width = image_width * scale;
+    // window_width is 1000
+    // left edge would be -500
 
+    // -500 + 800 / 2.0 = -100 which makes sense when drawing this on paper
+    let first_image_translation_x = left_edge + (scaled_image_width / 2.0);
+
+    for n in 0..num_tiles {
+        let x = first_image_translation_x + (scaled_image_width * n as f32);
         commands.spawn((
             Sprite {
-                image: asset_server.load(format!("sprites/{}", background_layer)),
-                // TODO: How can we get physical height of window? Or how can i properly scale this
-                // to fill entire window height
+                image: asset_server.load(BACKGROUND_IMAGE_PATH),
                 custom_size: Some(Vec2::new(scaled_image_width, window_height)),
                 image_mode: SpriteImageMode::Auto,
                 ..default()
             },
             Transform {
-                translation: Vec3::new(-scaled_image_width, 0.0, n as f32),
-                ..default()
-            },
-            ScrollingBackground {
-                width: scaled_image_width,
-            },
-        ));
-
-        commands.spawn((
-            Sprite {
-                image: asset_server.load(format!("sprites/{}", background_layer)),
-                custom_size: Some(Vec2::new(scaled_image_width, window_height)),
-                image_mode: SpriteImageMode::Auto,
-                ..default()
-            },
-            Transform {
-                translation: Vec3::new(0.0, 0.0, n as f32),
-                ..default()
-            },
-            ScrollingBackground {
-                width: scaled_image_width,
-            },
-        ));
-
-        commands.spawn((
-            Sprite {
-                image: asset_server.load(format!("sprites/{}", background_layer)),
-                custom_size: Some(Vec2::new(scaled_image_width, window_height)),
-                image_mode: SpriteImageMode::Auto,
-                ..default()
-            },
-            Transform {
-                translation: Vec3::new(scaled_image_width, 0.0, n as f32),
+                translation: Vec3::new(x, 0.0, 0.0),
                 ..default()
             },
             ScrollingBackground {
@@ -117,12 +78,10 @@ pub fn handle_scrolling_background(
     mut query: Query<(&mut Transform, &ScrollingBackground), With<ScrollingBackground>>,
 ) {
     for (mut transform, bg) in query.iter_mut() {
-        transform.translation.x -= SCROLLING_SPEED * time.delta_secs();
+        let current_translation_x = transform.translation.x;
+        let new_translation_x = current_translation_x - SCROLLING_SPEED * time.delta_secs();
 
-        if transform.translation.x < -bg.width {
-            // Because we have three tiles
-            transform.translation.x += bg.width * 3.0
-        }
+        transform.translation.x = new_translation_x;
     }
 }
 
