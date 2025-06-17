@@ -1,6 +1,9 @@
 use bevy::{prelude::*, window::WindowResized};
 
-use crate::{RedrawBackgroundEvent, WindowDimensions, components::ScrollingBackground};
+use crate::{
+    RedrawBackgroundEvent, RedrawKnightEvent, WindowDimensions,
+    components::{Knight, RelevantForDespawnOnResize, ScrollingBackground},
+};
 
 const SCROLLING_SPEED: f32 = 100.0;
 
@@ -56,20 +59,39 @@ pub fn spawn_entire_background_image_from_layers(
             ScrollingBackground {
                 width: scaled_image_width,
             },
+            RelevantForDespawnOnResize {},
         ));
     }
 }
 
-pub fn spawn_knight(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn spawn_knight(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    window_dimensions: Res<WindowDimensions>,
+) {
+    let window_height = window_dimensions.height;
+
+    // TODO: I have no idea what to call these variables
+    let bottom_y = -(window_height / 2.0);
+
+    let ten_percent_of_window_height = bottom_y / 5.0;
+    let one_percent_of_window_height = ten_percent_of_window_height / 10.0;
+
+    // This is at 90.5 percent of the top of the image, but center is at 0x0, so we dont multiply
+    // by 90.5, but need to substract 50.0
+    let desired_thing = one_percent_of_window_height * 40.5;
+
     commands.spawn((
         Sprite {
             image: asset_server.load("sprites/knight_single.png"),
             ..default()
         },
         Transform {
-            translation: Vec3::new(0.0, 0.0, 20.0),
+            translation: Vec3::new(0.0, desired_thing, 1.0),
             ..default()
         },
+        Knight {},
+        RelevantForDespawnOnResize {},
     ));
 }
 
@@ -97,19 +119,22 @@ pub fn handle_scrolling_background(
 pub fn on_resize_system(
     mut commands: Commands,
     mut resizer_read: EventReader<WindowResized>,
-    mut redraw_writer: EventWriter<RedrawBackgroundEvent>,
-    scrolling_background_query: Query<Entity, With<ScrollingBackground>>,
+    mut background_redraw_event_writer: EventWriter<RedrawBackgroundEvent>,
+    mut knight_redraw_event_writer: EventWriter<RedrawKnightEvent>,
+    entities_to_despawn: Query<Entity, With<RelevantForDespawnOnResize>>,
     mut window_dimensions: ResMut<WindowDimensions>,
 ) {
     for window_resized_event in resizer_read.read() {
-        for entity in scrolling_background_query {
+        for entity in entities_to_despawn {
+            println!("Despawning entity: {:?}", entity);
             commands.entity(entity).despawn();
         }
 
         window_dimensions.width = window_resized_event.width;
         window_dimensions.height = window_resized_event.height;
 
-        redraw_writer.write(RedrawBackgroundEvent);
+        background_redraw_event_writer.write(RedrawBackgroundEvent);
+        knight_redraw_event_writer.write(RedrawKnightEvent);
     }
 }
 
@@ -121,6 +146,17 @@ pub fn redraw_background_system(
 ) {
     if event_reader.read().next().is_some() {
         spawn_entire_background_image_from_layers(commands, asset_server, window_dimensions);
+    }
+}
+
+pub fn redraw_knight_system(
+    mut event_reader: EventReader<RedrawKnightEvent>,
+    commands: Commands,
+    asset_server: Res<AssetServer>,
+    window_dimensions: Res<WindowDimensions>,
+) {
+    if event_reader.read().next().is_some() {
+        spawn_knight(commands, asset_server, window_dimensions);
     }
 }
 

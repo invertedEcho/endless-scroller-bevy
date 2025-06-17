@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use systems::{
-    handle_scrolling_background, on_resize_system, redraw_background_system, spawn_camera,
-    spawn_entire_background_image_from_layers, spawn_knight,
+    handle_scrolling_background, on_resize_system, redraw_background_system, redraw_knight_system,
+    spawn_camera, spawn_entire_background_image_from_layers, spawn_knight,
 };
 
 mod components;
@@ -38,11 +38,15 @@ impl Default for WindowDimensions {
 #[derive(Event)]
 pub struct RedrawBackgroundEvent;
 
+#[derive(Event)]
+pub struct RedrawKnightEvent;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .init_state::<AppState>()
         .add_event::<RedrawBackgroundEvent>()
+        .add_event::<RedrawKnightEvent>()
         .init_resource::<WindowDimensions>()
         .add_systems(
             Startup,
@@ -58,6 +62,7 @@ fn main() {
                 handle_scrolling_background,
                 on_resize_system,
                 redraw_background_system,
+                redraw_knight_system,
             ),
         )
         .run();
