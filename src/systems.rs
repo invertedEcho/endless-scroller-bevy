@@ -76,12 +76,21 @@ pub fn spawn_knight(mut commands: Commands, asset_server: Res<AssetServer>) {
 pub fn handle_scrolling_background(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &ScrollingBackground), With<ScrollingBackground>>,
+    window_dimensions: Res<WindowDimensions>,
 ) {
     for (mut transform, bg) in query.iter_mut() {
         let current_translation_x = transform.translation.x;
         let new_translation_x = current_translation_x - SCROLLING_SPEED * time.delta_secs();
 
         transform.translation.x = new_translation_x;
+
+        let right_edge_of_image = transform.translation.x + bg.width / 2.0;
+        let left_edge_window_width = -(window_dimensions.width / 2.0);
+
+        if right_edge_of_image < left_edge_window_width {
+            // TODO: Needs to be replaced with num_tiles
+            transform.translation.x += bg.width * 3.0;
+        }
     }
 }
 
