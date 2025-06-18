@@ -11,7 +11,7 @@ const SCROLLING_SPEED: f32 = 100.0;
 
 const BACKGROUND_IMAGE_PATH: &str = "sprites/background.png";
 
-pub fn spawn_background_image(
+pub fn spawn_background_image_with_collier(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     window_dimensions: Res<WindowDimensions>,
@@ -73,7 +73,7 @@ pub fn redraw_background_system(
     window_dimensions: Res<WindowDimensions>,
 ) {
     if event_reader.read().next().is_some() {
-        spawn_background_image(commands, asset_server, window_dimensions);
+        spawn_background_image_with_collier(commands, asset_server, window_dimensions);
     }
 }
 

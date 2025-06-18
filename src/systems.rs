@@ -22,6 +22,7 @@ pub fn on_resize_system(
         window_dimensions.width = window_resized_event.width;
         window_dimensions.height = window_resized_event.height;
 
+        // TODO: This will be too much at some point, figure out a better way to do this
         background_redraw_event_writer.write(RedrawBackgroundEvent);
         knight_redraw_event_writer.write(RedrawKnightEvent);
     }
