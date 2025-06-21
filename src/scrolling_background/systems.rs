@@ -1,17 +1,17 @@
 use bevy::prelude::*;
 
 use crate::{
-    background_image::components::ScrollingBackground, components::RelevantForDespawnOnResize,
-    resources::WindowDimensions,
+    components::RelevantForDespawnOnResize, resources::WindowDimensions,
+    scrolling_background::components::ScrollingBackground,
 };
 
-use super::events::RedrawBackgroundEvent;
+use super::events::RedrawScrollingBackgroundEvent;
 
 const SCROLLING_SPEED: f32 = 100.0;
 
 const BACKGROUND_IMAGE_PATH: &str = "sprites/background.png";
 
-pub fn spawn_background_image_with_collier(
+pub fn spawn_scrolling_backgrounds(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     window_dimensions: Res<WindowDimensions>,
@@ -39,10 +39,6 @@ pub fn spawn_background_image_with_collier(
 
     let left_edge = -window_width / 2.0;
 
-    // window_width is 1000
-    // left edge would be -500
-
-    // -500 + 800 / 2.0 = -100 which makes sense when drawing this on paper
     let first_image_translation_x = left_edge + (scaled_image_width / 2.0);
 
     for n in 0..num_tiles {
@@ -67,13 +63,13 @@ pub fn spawn_background_image_with_collier(
 }
 
 pub fn redraw_background_system(
-    mut event_reader: EventReader<RedrawBackgroundEvent>,
+    mut event_reader: EventReader<RedrawScrollingBackgroundEvent>,
     commands: Commands,
     asset_server: Res<AssetServer>,
     window_dimensions: Res<WindowDimensions>,
 ) {
     if event_reader.read().next().is_some() {
-        spawn_background_image_with_collier(commands, asset_server, window_dimensions);
+        spawn_scrolling_backgrounds(commands, asset_server, window_dimensions);
     }
 }
 

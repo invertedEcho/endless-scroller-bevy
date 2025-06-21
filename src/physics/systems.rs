@@ -5,6 +5,8 @@ use crate::{
     components::RelevantForDespawnOnResize, resources::WindowDimensions, utils::get_y_of_ground,
 };
 
+use super::events::RedrawGroundColliderEvent;
+
 // TODO: I don't like this.
 const GROUND_OFFSET: f32 = 10.0;
 
@@ -17,4 +19,14 @@ pub fn spawn_ground_collidier(mut commands: Commands, window_dimensions: Res<Win
             RelevantForDespawnOnResize {},
         ))
         .insert(Transform::from_xyz(0.0, y_of_ground - GROUND_OFFSET, 0.0));
+}
+
+pub fn redraw_ground_collider_system(
+    mut event_reader: EventReader<RedrawGroundColliderEvent>,
+    commands: Commands,
+    window_dimensions: Res<WindowDimensions>,
+) {
+    if event_reader.read().next().is_some() {
+        spawn_ground_collidier(commands, window_dimensions);
+    }
 }
