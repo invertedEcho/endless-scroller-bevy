@@ -7,3 +7,4 @@ edition = "2024"
 bevy = { version = "0.16", features = [] }
 imagesize = "0.14"
 bevy_rapier2d = "0.30.0"
+rand = "0.9.1"

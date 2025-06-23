@@ -6,6 +6,6 @@ pub fn get_y_of_ground(window_height: f32) -> f32 {
 
     // This is at 90.5 percent of the top of the image, but center is at 0x0, so we dont multiply
     // by 90.5, but need to substract 50.0
-    let y_coordinate_of_ground = one_percent_of_window_height * 40.5;
+    let y_coordinate_of_ground = one_percent_of_window_height * 41.5;
     return y_coordinate_of_ground;
 }

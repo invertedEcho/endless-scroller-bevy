@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct ScrollingBackground {
+pub struct BackgroundImage {
     pub width: f32,
 }

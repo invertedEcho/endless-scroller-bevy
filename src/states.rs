@@ -4,8 +4,8 @@ use bevy::prelude::*;
 pub enum GameState {
     #[default]
     RUNNING,
-    PAUSED,
-    LOADING,
+    // PAUSED,
+    // LOADING,
 }
 
 #[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]

@@ -1,5 +1,5 @@
 {
-  description = "Dev environment for learn-bevy";
+  description = "Dev environment for endless-scroller";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
@@ -18,7 +18,7 @@
         };
       in {
         devShells.default = pkgs.mkShell {
-          name = "alsa-udev-shell";
+          name = "endless-scroller-dev-shell";
           buildInputs = [
             pkgs.alsa-lib
             pkgs.systemd

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct Knight {}
+pub struct Player {}
 
 #[derive(Component)]
 pub struct Ground {}

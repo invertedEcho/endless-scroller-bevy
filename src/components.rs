@@ -1,4 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct RelevantForDespawnOnResize {}
+pub struct RelevantForMoveY;
+
+#[derive(Component)]
+pub struct RelevantForMoveX;

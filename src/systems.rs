@@ -1,37 +1,57 @@
 use bevy::{prelude::*, window::WindowResized};
 
-use crate::components::RelevantForDespawnOnResize;
-use crate::physics::events::RedrawGroundColliderEvent;
-use crate::player::events::RedrawKnightEvent;
-use crate::scrolling_background::events::RedrawScrollingBackgroundEvent;
+use crate::background_image::components::BackgroundImage;
+use crate::background_image::events::RedrawScrollingBackgroundEvent;
+use crate::components::{RelevantForMoveX, RelevantForMoveY};
+use crate::events::RelevantForMoveYEvent;
 
 use crate::resources::WindowDimensions;
+use crate::utils::get_y_of_ground;
+
+const SCROLLING_SPEED: f32 = 100.0;
 
 pub fn on_resize_system(
     mut commands: Commands,
+    background_image_query: Query<Entity, With<BackgroundImage>>,
     mut resizer_read: EventReader<WindowResized>,
     mut scrolling_background_redraw_event_writer: EventWriter<RedrawScrollingBackgroundEvent>,
-    mut knight_redraw_event_writer: EventWriter<RedrawKnightEvent>,
-    mut ground_collider_event_writer: EventWriter<RedrawGroundColliderEvent>,
-    entities_to_despawn: Query<Entity, With<RelevantForDespawnOnResize>>,
+    mut relevant_for_move_y_event_writer: EventWriter<RelevantForMoveYEvent>,
     mut window_dimensions: ResMut<WindowDimensions>,
 ) {
     for window_resized_event in resizer_read.read() {
-        for entity in entities_to_despawn {
-            println!("Despawning relevant entity: {:?}", entity);
-            commands.entity(entity).despawn();
+        for background_image in background_image_query {
+            println!("Despawning background image: {:?}", background_image);
+            commands.entity(background_image).despawn();
         }
 
         window_dimensions.width = window_resized_event.width;
         window_dimensions.height = window_resized_event.height;
 
-        // TODO: This will be too much at some point, figure out a better way to do this
         scrolling_background_redraw_event_writer.write(RedrawScrollingBackgroundEvent);
-        knight_redraw_event_writer.write(RedrawKnightEvent);
-        ground_collider_event_writer.write(RedrawGroundColliderEvent);
+        relevant_for_move_y_event_writer.write(RelevantForMoveYEvent);
     }
 }
 
-pub fn spawn_camera(mut commands: Commands) {
-    commands.spawn(Camera2d::default());
+pub fn handle_relevant_for_move_y_event(
+    mut event_reader: EventReader<RelevantForMoveYEvent>,
+    query: Query<&mut Transform, With<RelevantForMoveY>>,
+    window_dimensions: Res<WindowDimensions>,
+) {
+    if event_reader.read().next().is_some() {
+        // TODO: I think we need to freeze player so it cant fall
+        let y_of_ground = get_y_of_ground(window_dimensions.height);
+        for mut entity in query {
+            entity.translation.y = y_of_ground;
+        }
+    }
+}
+
+pub fn scrolling_system(query: Query<&mut Transform, With<RelevantForMoveX>>, time: Res<Time>) {
+    for mut transform in query {
+        let current_translation_x = transform.translation.x;
+
+        let new_translation_x = current_translation_x + SCROLLING_SPEED * time.delta_secs();
+
+        transform.translation.x = new_translation_x;
+    }
 }
