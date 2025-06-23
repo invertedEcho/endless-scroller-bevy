@@ -1,11 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    components::RelevantForDespawnOnResize, resources::WindowDimensions,
-    scrolling_background::components::ScrollingBackground,
-};
-
-use super::events::RedrawScrollingBackgroundEvent;
+use crate::{resources::WindowDimensions, scrolling_background::components::ScrollingBackground};
 
 const SCROLLING_SPEED: f32 = 100.0;
 
@@ -55,21 +50,10 @@ pub fn spawn_scrolling_backgrounds(
                 ..default()
             },
             ScrollingBackground {
+                height: window_height,
                 width: scaled_image_width,
             },
-            RelevantForDespawnOnResize {},
         ));
-    }
-}
-
-pub fn redraw_background_system(
-    mut event_reader: EventReader<RedrawScrollingBackgroundEvent>,
-    commands: Commands,
-    asset_server: Res<AssetServer>,
-    window_dimensions: Res<WindowDimensions>,
-) {
-    if event_reader.read().next().is_some() {
-        spawn_scrolling_backgrounds(commands, asset_server, window_dimensions);
     }
 }
 

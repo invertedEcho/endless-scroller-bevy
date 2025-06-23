@@ -1,34 +1,43 @@
 use bevy::{prelude::*, window::WindowResized};
 
-use crate::components::RelevantForDespawnOnResize;
-use crate::physics::events::RedrawGroundColliderEvent;
-use crate::player::events::RedrawKnightEvent;
-use crate::scrolling_background::events::RedrawScrollingBackgroundEvent;
+use crate::components::RelevantForMoveYOnResize;
 
 use crate::resources::WindowDimensions;
+use crate::scrolling_background::components::ScrollingBackground;
+use crate::utils::get_y_of_ground;
 
 pub fn on_resize_system(
-    mut commands: Commands,
     mut resizer_read: EventReader<WindowResized>,
-    mut scrolling_background_redraw_event_writer: EventWriter<RedrawScrollingBackgroundEvent>,
-    mut knight_redraw_event_writer: EventWriter<RedrawKnightEvent>,
-    mut ground_collider_event_writer: EventWriter<RedrawGroundColliderEvent>,
-    entities_to_despawn: Query<Entity, With<RelevantForDespawnOnResize>>,
     mut window_dimensions: ResMut<WindowDimensions>,
+    query: Query<&mut Transform, With<RelevantForMoveYOnResize>>,
+    background_query: Query<(&mut ScrollingBackground, &mut Sprite), With<ScrollingBackground>>,
 ) {
-    for window_resized_event in resizer_read.read() {
-        for entity in entities_to_despawn {
-            println!("Despawning relevant entity: {:?}", entity);
-            commands.entity(entity).despawn();
+    let maybe_resized_event = resizer_read.read().next();
+
+    if maybe_resized_event.is_some() {
+        let window_resized_event = maybe_resized_event.unwrap();
+        let new_window_height = window_resized_event.height;
+        window_dimensions.width = window_resized_event.width;
+        window_dimensions.height = new_window_height;
+
+        let y_of_ground = get_y_of_ground(new_window_height);
+
+        // If we get a window_resized_event, move y coordinate of player, ground collider
+        for mut transform in query {
+            transform.translation.y = y_of_ground;
         }
 
-        window_dimensions.width = window_resized_event.width;
-        window_dimensions.height = window_resized_event.height;
+        // also, need to rescale background image so it fills entire screen
+        for (mut bg, mut sprite) in background_query {
+            let image_height = bg.height;
+            let image_width = bg.width;
+            let scale = new_window_height / image_height;
+            let scaled_image_width = image_width * scale;
 
-        // TODO: This will be too much at some point, figure out a better way to do this
-        scrolling_background_redraw_event_writer.write(RedrawScrollingBackgroundEvent);
-        knight_redraw_event_writer.write(RedrawKnightEvent);
-        ground_collider_event_writer.write(RedrawGroundColliderEvent);
+            bg.height = new_window_height;
+            bg.width = scaled_image_width;
+            sprite.custom_size = Some(Vec2::new(scaled_image_width, window_dimensions.height));
+        }
     }
 }
 
