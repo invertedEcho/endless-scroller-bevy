@@ -9,3 +9,8 @@ pub fn get_y_of_ground(window_height: f32) -> f32 {
     let y_coordinate_of_ground = one_percent_of_window_height * 41.5;
     return y_coordinate_of_ground;
 }
+
+// TODO: Maybe num_tiles should be stored in our state / as resource?
+pub fn get_num_tiles(window_width: f32, scaled_image_width: f32) -> usize {
+    (window_width / scaled_image_width).ceil() as usize + 1
+}

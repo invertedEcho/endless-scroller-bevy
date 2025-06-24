@@ -1,6 +1,10 @@
 use bevy::prelude::*;
+use bevy_rapier2d::{prelude::Collider, render::ColliderDebugColor};
 
-use crate::{resources::WindowDimensions, scrolling_background::components::ScrollingBackground};
+use crate::{
+    resources::WindowDimensions, scrolling_background::components::ScrollingBackground,
+    utils::get_num_tiles,
+};
 
 const SCROLLING_SPEED: f32 = 100.0;
 
@@ -29,13 +33,23 @@ pub fn spawn_scrolling_backgrounds(
     println!("window height: {}", window_height);
     println!("window width: {}", window_dimensions.width);
 
-    let num_tiles = (window_width / scaled_image_width).ceil() as usize + 1;
+    let num_tiles = get_num_tiles(window_width, scaled_image_width);
     println!("num_tiles: {}", num_tiles);
 
     let left_edge = -window_width / 2.0;
 
     let first_image_translation_x = left_edge + (scaled_image_width / 2.0);
 
+    // TODO: Generate depending on num_tiles
+    let debug_colors: Vec<Hsla> = vec![
+        Hsla::hsl(216.0, 1.0, 0.5),
+        Hsla::hsl(0.0, 1.0, 0.5),
+        Hsla::hsl(120.0, 1.0, 0.5),
+        Hsla::hsl(60.0, 1.0, 0.5),
+    ];
+
+    // FIXME: This is completely wrong... Can easily be seen when using the ColliderDebugColors...
+    // Overlapping
     for n in 0..num_tiles {
         let x = first_image_translation_x + (scaled_image_width * n as f32);
         commands.spawn((
@@ -53,6 +67,8 @@ pub fn spawn_scrolling_backgrounds(
                 height: window_height,
                 width: scaled_image_width,
             },
+            Collider::cuboid(scaled_image_width / 2.0, window_height / 2.0),
+            ColliderDebugColor(debug_colors[n]),
         ));
     }
 }
@@ -72,8 +88,9 @@ pub fn handle_scrolling_background(
         let left_edge_window_width = -(window_dimensions.width / 2.0);
 
         if right_edge_of_image < left_edge_window_width {
+            let num_tiles = get_num_tiles(window_dimensions.width, bg.width);
             // TODO: Needs to be replaced with num_tiles
-            transform.translation.x += bg.width * 3.0;
+            transform.translation.x += bg.width * (num_tiles - 1) as f32;
         }
     }
 }
