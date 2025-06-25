@@ -14,3 +14,7 @@ pub fn get_y_of_ground(window_height: f32) -> f32 {
 pub fn get_num_tiles(window_width: f32, scaled_image_width: f32) -> usize {
     (window_width / scaled_image_width).ceil() as usize + 1
 }
+
+pub fn get_left_edge_of_window(window_width: f32) -> f32 {
+    -(window_width / 2.0)
+}

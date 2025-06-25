@@ -1,10 +1,11 @@
 use bevy::prelude::*;
-use bevy_rapier2d::{prelude::Collider, render::ColliderDebugColor};
 
 use crate::{
-    resources::WindowDimensions, scrolling_background::components::ScrollingBackground,
-    utils::get_num_tiles,
+    resources::WindowDimensions,
+    scrolling_background::components::ScrollingBackground,
+    utils::{get_left_edge_of_window, get_num_tiles},
 };
+use bevy_rapier2d::prelude::*;
 
 const SCROLLING_SPEED: f32 = 100.0;
 
@@ -36,9 +37,9 @@ pub fn spawn_scrolling_backgrounds(
     let num_tiles = get_num_tiles(window_width, scaled_image_width);
     println!("num_tiles: {}", num_tiles);
 
-    let left_edge = -window_width / 2.0;
+    let left_edge_of_window = get_left_edge_of_window(window_width);
 
-    let first_image_translation_x = left_edge + (scaled_image_width / 2.0);
+    let first_image_translation_x = left_edge_of_window + (scaled_image_width / 2.0);
 
     // TODO: Generate depending on num_tiles
     let debug_colors: Vec<Hsla> = vec![
@@ -48,10 +49,12 @@ pub fn spawn_scrolling_backgrounds(
         Hsla::hsl(60.0, 1.0, 0.5),
     ];
 
-    // FIXME: This is completely wrong... Can easily be seen when using the ColliderDebugColors...
-    // Overlapping
-    for n in 0..num_tiles {
-        let x = first_image_translation_x + (scaled_image_width * n as f32);
+    for index in 0..num_tiles {
+        let translation_x = first_image_translation_x + (scaled_image_width * index as f32);
+        println!(
+            "Spawning background image index: {} at translation.x: {}",
+            index, translation_x
+        );
         commands.spawn((
             Sprite {
                 image: asset_server.load(BACKGROUND_IMAGE_PATH),
@@ -60,7 +63,7 @@ pub fn spawn_scrolling_backgrounds(
                 ..default()
             },
             Transform {
-                translation: Vec3::new(x, 0.0, 0.0),
+                translation: Vec3::new(translation_x, 0.0, 0.0),
                 ..default()
             },
             ScrollingBackground {
@@ -68,7 +71,7 @@ pub fn spawn_scrolling_backgrounds(
                 width: scaled_image_width,
             },
             Collider::cuboid(scaled_image_width / 2.0, window_height / 2.0),
-            ColliderDebugColor(debug_colors[n]),
+            ColliderDebugColor(debug_colors[index]),
         ));
     }
 }
@@ -85,12 +88,12 @@ pub fn handle_scrolling_background(
         transform.translation.x = new_translation_x;
 
         let right_edge_of_image = transform.translation.x + bg.width / 2.0;
-        let left_edge_window_width = -(window_dimensions.width / 2.0);
+        let left_edge_of_window = get_left_edge_of_window(window_dimensions.width);
 
-        if right_edge_of_image < left_edge_window_width {
+        if right_edge_of_image < left_edge_of_window {
             let num_tiles = get_num_tiles(window_dimensions.width, bg.width);
             // TODO: Needs to be replaced with num_tiles
-            transform.translation.x += bg.width * (num_tiles - 1) as f32;
+            transform.translation.x += bg.width * 3 as f32;
         }
     }
 }
