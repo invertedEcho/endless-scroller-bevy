@@ -1,34 +1,119 @@
 use bevy::{prelude::*, window::WindowResized};
 
-use crate::components::RelevantForDespawnOnResize;
-use crate::physics::events::RedrawGroundColliderEvent;
-use crate::player::events::RedrawKnightEvent;
-use crate::scrolling_background::events::RedrawScrollingBackgroundEvent;
+use crate::components::RelevantForMoveYOnResize;
 
 use crate::resources::WindowDimensions;
+use crate::scrolling_background::components::ScrollingBackground;
+use crate::utils::get_y_of_ground;
 
+// TODO: Split up this function into multiple
 pub fn on_resize_system(
-    mut commands: Commands,
-    mut resizer_read: EventReader<WindowResized>,
-    mut scrolling_background_redraw_event_writer: EventWriter<RedrawScrollingBackgroundEvent>,
-    mut knight_redraw_event_writer: EventWriter<RedrawKnightEvent>,
-    mut ground_collider_event_writer: EventWriter<RedrawGroundColliderEvent>,
-    entities_to_despawn: Query<Entity, With<RelevantForDespawnOnResize>>,
+    mut window_resized_event_reader: EventReader<WindowResized>,
     mut window_dimensions: ResMut<WindowDimensions>,
+    relevant_for_move_y_on_resize_query: Query<
+        &mut Transform,
+        (With<RelevantForMoveYOnResize>, Without<ScrollingBackground>),
+    >,
+    mut scrolling_background_query: Query<
+        (&mut ScrollingBackground, &mut Sprite, &mut Transform),
+        With<ScrollingBackground>,
+    >,
 ) {
-    for window_resized_event in resizer_read.read() {
-        for entity in entities_to_despawn {
-            println!("Despawning relevant entity: {:?}", entity);
-            commands.entity(entity).despawn();
+    let Some(window_resized_event) = window_resized_event_reader.read().next() else {
+        return;
+    };
+
+    println!("\n");
+    println!("\n");
+    println!("--------New window dimensions!------");
+    println!("Old window height: {}", window_dimensions.height);
+    println!("New window height: {}", window_resized_event.height);
+    println!("\n");
+    println!("Old window width: {}", window_dimensions.width);
+    println!("New window width: {}", window_resized_event.width);
+    println!("------------------------------------");
+    println!("\n");
+    println!("\n");
+
+    let new_window_height = window_resized_event.height;
+    window_dimensions.width = window_resized_event.width;
+    window_dimensions.height = new_window_height;
+
+    let y_of_ground = get_y_of_ground(new_window_height);
+
+    for mut transform in relevant_for_move_y_on_resize_query {
+        transform.translation.y = y_of_ground;
+    }
+
+    let scrolling_backgrounds_sorted =
+        scrolling_background_query
+            .iter_mut()
+            .sort_by::<(&ScrollingBackground, &Sprite, &Transform)>(
+                |a: &(&ScrollingBackground, &Sprite, &Transform),
+                 b: &(&ScrollingBackground, &Sprite, &Transform)| {
+                    return a
+                        .2
+                        .translation
+                        .x
+                        .partial_cmp(&b.2.translation.x)
+                        .expect("Sorting should not panic?");
+                },
+            );
+
+    // also, need to rescale background image so it fills entire screen again
+    for (index, (mut bg, mut sprite, mut transform)) in scrolling_backgrounds_sorted.enumerate() {
+        let old_image_height = bg.height;
+        let old_image_width = bg.width;
+
+        let scale = new_window_height / old_image_height;
+        let new_image_width_scaled = old_image_width * scale;
+
+        println!("Old image height: {}", old_image_height);
+        println!("New image height: {}", new_window_height);
+
+        println!("Old image width: {}", old_image_width);
+        println!("New image width: {}", new_image_width_scaled);
+
+        if old_image_height == new_window_height && old_image_width == new_image_width_scaled {
+            println!("Nothing changed, skipping rescaling and moving scrolling background images.");
+            return;
         }
 
-        window_dimensions.width = window_resized_event.width;
-        window_dimensions.height = window_resized_event.height;
+        bg.height = new_window_height;
+        bg.width = new_image_width_scaled;
 
-        // TODO: This will be too much at some point, figure out a better way to do this
-        scrolling_background_redraw_event_writer.write(RedrawScrollingBackgroundEvent);
-        knight_redraw_event_writer.write(RedrawKnightEvent);
-        ground_collider_event_writer.write(RedrawGroundColliderEvent);
+        sprite.custom_size = Some(Vec2::new(new_image_width_scaled, new_window_height));
+
+        // then, move all but the leftmost image so we close the gaps or avoid having overlapping
+        // images.
+
+        if index == 0 {
+            continue;
+        }
+
+        let difference_image_width = old_image_width - new_image_width_scaled;
+        println!("Difference image width: {}", difference_image_width);
+
+        let absolute_difference_with_index = (difference_image_width * index as f32).abs();
+        if difference_image_width > 0.0 {
+            println!("\n");
+            println!("\n");
+            println!("Assumed window width decrease, decreasing translation.x");
+            println!("Current translation.x: {}", transform.translation.x);
+            println!("Decreasing by: {}", absolute_difference_with_index);
+            println!("\n");
+            println!("\n");
+            transform.translation.x -= absolute_difference_with_index;
+        } else {
+            println!("\n");
+            println!("\n");
+            println!("Assumed window width increase, increasing translation.x");
+            println!("Current translation.x: {}", transform.translation.x);
+            println!("Increasing by: {}", absolute_difference_with_index);
+            println!("\n");
+            println!("\n");
+            transform.translation.x += absolute_difference_with_index;
+        }
     }
 }
 
