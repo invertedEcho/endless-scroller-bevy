@@ -41,7 +41,6 @@ pub fn on_resize_system(
 
     let y_of_ground = get_y_of_ground(new_window_height);
 
-    // If we get a window_resized_event, move y coordinate of player, ground collider
     for mut transform in relevant_for_move_y_on_resize_query {
         transform.translation.y = y_of_ground;
     }
@@ -63,13 +62,11 @@ pub fn on_resize_system(
 
     // also, need to rescale background image so it fills entire screen again
     for (index, (mut bg, mut sprite, mut transform)) in scrolling_backgrounds_sorted.enumerate() {
-        println!("Transform: {:?}", transform);
         let old_image_height = bg.height;
         let old_image_width = bg.width;
 
         let scale = new_window_height / old_image_height;
         let new_image_width_scaled = old_image_width * scale;
-        println!("Scale: {}", scale);
 
         println!("Old image height: {}", old_image_height);
         println!("New image height: {}", new_window_height);
@@ -97,12 +94,25 @@ pub fn on_resize_system(
         let difference_image_width = old_image_width - new_image_width_scaled;
         println!("Difference image width: {}", difference_image_width);
 
+        let absolute_difference_with_index = (difference_image_width * index as f32).abs();
         if difference_image_width > 0.0 {
-            println!("Assumed window width decrease");
-            transform.translation.x -= difference_image_width * (index + 1) as f32;
+            println!("\n");
+            println!("\n");
+            println!("Assumed window width decrease, decreasing translation.x");
+            println!("Current translation.x: {}", transform.translation.x);
+            println!("Decreasing by: {}", absolute_difference_with_index);
+            println!("\n");
+            println!("\n");
+            transform.translation.x -= absolute_difference_with_index;
         } else {
-            println!("Assumed window width increase");
-            transform.translation.x += difference_image_width * (index + 1) as f32;
+            println!("\n");
+            println!("\n");
+            println!("Assumed window width increase, increasing translation.x");
+            println!("Current translation.x: {}", transform.translation.x);
+            println!("Increasing by: {}", absolute_difference_with_index);
+            println!("\n");
+            println!("\n");
+            transform.translation.x += absolute_difference_with_index;
         }
     }
 }
