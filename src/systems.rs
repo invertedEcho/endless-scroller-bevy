@@ -90,6 +90,10 @@ pub fn on_resize_system(
         // then, move all but the leftmost image so we close the gaps or avoid having overlapping
         // images.
 
+        if index == 0 {
+            continue;
+        }
+
         let difference_image_width = old_image_width - new_image_width_scaled;
         println!("Difference image width: {}", difference_image_width);
 

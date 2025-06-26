@@ -5,7 +5,6 @@ use crate::{
     scrolling_background::components::ScrollingBackground,
     utils::{get_left_edge_of_window, get_num_tiles},
 };
-use bevy_rapier2d::prelude::*;
 
 const SCROLLING_SPEED: f32 = 100.0;
 
@@ -42,11 +41,11 @@ pub fn spawn_scrolling_backgrounds(
     let first_image_translation_x = left_edge_of_window + (scaled_image_width / 2.0);
 
     // TODO: Generate depending on num_tiles
-    let debug_colors: Vec<Hsla> = vec![
-        Hsla::hsl(216.0, 1.0, 0.5),
-        Hsla::hsl(0.0, 1.0, 0.5),
-        Hsla::hsl(120.0, 1.0, 0.5),
-        Hsla::hsl(60.0, 1.0, 0.5),
+    let debug_colors: Vec<Color> = vec![
+        Color::hsl(216.0, 1.0, 0.5),
+        Color::hsl(0.0, 1.0, 0.5),
+        Color::hsl(120.0, 1.0, 0.5),
+        Color::hsl(60.0, 1.0, 0.5),
     ];
 
     for index in 0..num_tiles {
@@ -60,6 +59,8 @@ pub fn spawn_scrolling_backgrounds(
                 image: asset_server.load(BACKGROUND_IMAGE_PATH),
                 custom_size: Some(Vec2::new(scaled_image_width, window_height)),
                 image_mode: SpriteImageMode::Auto,
+                // tint color for debug purposes
+                color: debug_colors[index],
                 ..default()
             },
             Transform {
@@ -70,8 +71,6 @@ pub fn spawn_scrolling_backgrounds(
                 height: window_height,
                 width: scaled_image_width,
             },
-            Collider::cuboid(scaled_image_width / 2.0, window_height / 2.0),
-            ColliderDebugColor(debug_colors[index]),
         ));
     }
 }
