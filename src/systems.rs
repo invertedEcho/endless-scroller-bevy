@@ -7,6 +7,8 @@ use crate::utils::get_y_of_ground;
 
 use crate::physics::components::GroundCollider;
 
+use crate::player::PLAYER_COLLIDER_RADIUS;
+
 // TODO: Split up this function into multiple
 pub fn on_resize_system(
     mut window_resized_event_reader: EventReader<WindowResized>,
@@ -60,8 +62,7 @@ pub fn on_resize_system(
     let mut player = player_query
         .single_mut()
         .expect("Exactly one player exists");
-    // TODO: Figure out what we need to add so it doesnt fall through the ground collider
-    player.translation.y = y_of_ground + 100.0;
+    player.translation.y = y_of_ground + PLAYER_COLLIDER_RADIUS;
 
     let scrolling_backgrounds_sorted =
         scrolling_background_query

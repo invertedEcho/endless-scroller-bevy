@@ -1,20 +1,17 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{resources::WindowDimensions, utils::get_y_of_ground};
+use crate::{player::PLAYER_COLLIDER_RADIUS, resources::WindowDimensions, utils::get_y_of_ground};
 
 use super::components::Player;
-
-const PLAYER_COLLIDER_RADIUS: f32 = 10.0;
 
 pub fn spawn_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     window_dimensions: Res<WindowDimensions>,
 ) {
-    let y_of_player = 0.0;
-    // let y_of_ground = get_y_of_ground(window_dimensions.height);
-    // println!("y_of_ground: {}", y_of_ground);
+    let y_of_ground = get_y_of_ground(window_dimensions.height);
+    let y_of_player = y_of_ground + PLAYER_COLLIDER_RADIUS;
 
     commands.spawn((
         RigidBody::Dynamic,
@@ -46,13 +43,16 @@ pub fn jump_knight_system(
         let y_of_ground = get_y_of_ground(window_dimensions.height);
         let bottom_position_of_knight = transform.translation.y - PLAYER_COLLIDER_RADIUS;
 
-        println!("y_of_ground as i32: {}", y_of_ground);
+        println!("y_of_ground as i32: {}", y_of_ground as i32);
         println!(
             "bottom_position_of_knight as i32: {}",
-            bottom_position_of_knight
+            bottom_position_of_knight as i32
         );
 
-        if y_of_ground as i32 == bottom_position_of_knight as i32 {
+        let difference = (y_of_ground - bottom_position_of_knight).abs();
+
+        // TODO: Investigate why on certain window dimensions theres a diff of one
+        if difference <= 1.0 {
             velocity.linvel = Vec2::new(0.0, 300.0);
         }
     }
