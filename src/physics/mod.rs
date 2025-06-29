@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use systems::spawn_ground_collidier;
 
+pub mod components;
 mod systems;
 
 pub struct PhysicsPlugin;
