@@ -6,7 +6,6 @@ use scrolling_background::ScrollingBackgroundPlugin;
 use states::AppState;
 use systems::{on_resize_system, spawn_camera};
 
-mod components;
 mod physics;
 mod player;
 mod resources;
@@ -18,9 +17,9 @@ mod utils;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugins(PhysicsPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(ScrollingBackgroundPlugin)
-        .add_plugins(PhysicsPlugin)
         .init_state::<AppState>()
         .init_resource::<WindowDimensions>()
         .add_systems(Startup, spawn_camera)

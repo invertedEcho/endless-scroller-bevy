@@ -1,4 +1,4 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct RelevantForMoveYOnResize;
+pub struct GroundCollider;

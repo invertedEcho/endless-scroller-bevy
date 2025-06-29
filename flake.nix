@@ -18,7 +18,6 @@
         };
       in {
         devShells.default = pkgs.mkShell {
-          name = "alsa-udev-shell";
           buildInputs = [
             pkgs.alsa-lib
             pkgs.systemd

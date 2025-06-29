@@ -1,22 +1,35 @@
 use bevy::{prelude::*, window::WindowResized};
 
-use crate::components::RelevantForMoveYOnResize;
-
+use crate::player::components::Player;
 use crate::resources::WindowDimensions;
 use crate::scrolling_background::components::ScrollingBackground;
 use crate::utils::get_y_of_ground;
+
+use crate::physics::components::GroundCollider;
+
+use crate::player::PLAYER_COLLIDER_RADIUS;
 
 // TODO: Split up this function into multiple
 pub fn on_resize_system(
     mut window_resized_event_reader: EventReader<WindowResized>,
     mut window_dimensions: ResMut<WindowDimensions>,
-    relevant_for_move_y_on_resize_query: Query<
-        &mut Transform,
-        (With<RelevantForMoveYOnResize>, Without<ScrollingBackground>),
-    >,
+    mut ground_collider_query: Query<&mut Transform, With<GroundCollider>>,
+    // TODO: I think we can solve this mess with using system sets
     mut scrolling_background_query: Query<
         (&mut ScrollingBackground, &mut Sprite, &mut Transform),
-        With<ScrollingBackground>,
+        (
+            With<ScrollingBackground>,
+            Without<Player>,
+            Without<GroundCollider>,
+        ),
+    >,
+    mut player_query: Query<
+        &mut Transform,
+        (
+            With<Player>,
+            Without<ScrollingBackground>,
+            Without<GroundCollider>,
+        ),
     >,
 ) {
     let Some(window_resized_event) = window_resized_event_reader.read().next() else {
@@ -41,9 +54,15 @@ pub fn on_resize_system(
 
     let y_of_ground = get_y_of_ground(new_window_height);
 
-    for mut transform in relevant_for_move_y_on_resize_query {
-        transform.translation.y = y_of_ground;
-    }
+    let mut ground_collider = ground_collider_query
+        .single_mut()
+        .expect("Exactly one ground collider exists");
+    ground_collider.translation.y = y_of_ground;
+
+    let mut player = player_query
+        .single_mut()
+        .expect("Exactly one player exists");
+    player.translation.y = y_of_ground + PLAYER_COLLIDER_RADIUS;
 
     let scrolling_backgrounds_sorted =
         scrolling_background_query
