@@ -6,6 +6,7 @@ use player::PlayerPlugin;
 use scrolling_background::ScrollingBackgroundPlugin;
 use states::GameState;
 use systems::{on_resize_system, spawn_camera};
+use ui::UiPlugin;
 
 mod components;
 mod obstacle;
@@ -15,11 +16,13 @@ mod resources;
 mod scrolling_background;
 mod states;
 mod systems;
+mod ui;
 mod utils;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugins(UiPlugin)
         .add_plugins(PhysicsPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(ScrollingBackgroundPlugin)

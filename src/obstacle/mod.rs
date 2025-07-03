@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use resources::ObstacleSpawnTimer;
 use systems::{handle_collision_event, spawn_obstacles_over_time, tick_obstacle_spawn_timer};
 
+use crate::states::GameState;
+
 pub mod components;
 mod resources;
 mod systems;
@@ -18,7 +20,8 @@ impl Plugin for ObstaclePlugin {
                 tick_obstacle_spawn_timer,
                 spawn_obstacles_over_time,
                 handle_collision_event,
-            ),
+            )
+                .run_if(in_state(GameState::PLAYING)),
         );
     }
 }

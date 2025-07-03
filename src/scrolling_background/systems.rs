@@ -3,15 +3,16 @@ use bevy::prelude::*;
 use crate::{
     obstacle::components::Platform,
     resources::WindowDimensions,
-    scrolling_background::components::ScrollingBackground,
+    scrolling_background::components::BackgroundImage,
+    states::GameState,
     utils::{get_left_edge_of_window, get_num_tiles},
 };
 
-const SCROLLING_SPEED: f32 = 200.0;
+use super::utils::get_scrolling_speed;
 
 const BACKGROUND_IMAGE_PATH: &str = "sprites/background.png";
 
-pub fn spawn_scrolling_backgrounds(
+pub fn spawn_background_images(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     window_dimensions: Res<WindowDimensions>,
@@ -56,7 +57,7 @@ pub fn spawn_scrolling_backgrounds(
                 translation: Vec3::new(translation_x, 0.0, 0.0),
                 ..default()
             },
-            ScrollingBackground {
+            BackgroundImage {
                 height: window_height,
                 width: scaled_image_width,
             },
@@ -64,18 +65,21 @@ pub fn spawn_scrolling_backgrounds(
     }
 }
 
-pub fn handle_scrolling_background(
+pub fn scroll_background_images(
+    game_state: Res<State<GameState>>,
     time: Res<Time>,
     mut scrolling_background_query: Query<
-        (&mut Transform, &ScrollingBackground),
-        (With<ScrollingBackground>, Without<Platform>),
+        (&mut Transform, &BackgroundImage),
+        (With<BackgroundImage>, Without<Platform>),
     >,
-    mut platform_query: Query<&mut Transform, (With<Platform>, Without<ScrollingBackground>)>,
+    mut platform_query: Query<&mut Transform, (With<Platform>, Without<BackgroundImage>)>,
     window_dimensions: Res<WindowDimensions>,
 ) {
+    let scrolling_speed = get_scrolling_speed(game_state.get());
+
     for (mut transform, bg) in scrolling_background_query.iter_mut() {
         let current_translation_x = transform.translation.x;
-        let new_translation_x = current_translation_x - SCROLLING_SPEED * time.delta_secs();
+        let new_translation_x = current_translation_x - scrolling_speed * time.delta_secs();
 
         transform.translation.x = new_translation_x;
 
@@ -90,9 +94,10 @@ pub fn handle_scrolling_background(
             transform.translation.x += bg.width * 3 as f32;
         }
     }
+
     for mut transform in platform_query.iter_mut() {
         let current_translation_x = transform.translation.x;
-        let new_translation_x = current_translation_x - SCROLLING_SPEED * time.delta_secs();
+        let new_translation_x = current_translation_x - scrolling_speed * time.delta_secs();
 
         transform.translation.x = new_translation_x;
     }

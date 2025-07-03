@@ -13,11 +13,10 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_player)
-            .add_systems(Update, jump_knight_system)
+        app.add_systems(OnEnter(GameState::PLAYING), spawn_player)
             .add_systems(
                 Update,
-                check_if_player_dead.run_if(in_state(GameState::RUNNING)),
+                (jump_knight_system, check_if_player_dead).run_if(in_state(GameState::PLAYING)),
             );
     }
 }
