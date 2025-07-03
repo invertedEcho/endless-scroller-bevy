@@ -5,8 +5,9 @@ use crate::states::GameState;
 
 pub mod components;
 mod systems;
+pub mod utils;
 
-pub const PLAYER_COLLIDER_RADIUS: f32 = 10.0;
+pub const PLAYER_SIZE_FACTOR: f32 = 1.5;
 
 pub struct PlayerPlugin;
 

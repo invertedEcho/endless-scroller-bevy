@@ -1,14 +1,12 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{
-    obstacle::components::Platform, player::PLAYER_COLLIDER_RADIUS, resources::WindowDimensions,
-    utils::get_y_of_ground,
-};
+use crate::{obstacle::components::Platform, resources::WindowDimensions, utils::get_y_of_ground};
 
 use super::resources::ObstacleSpawnTimer;
 
-const SINGLE_PLATFORM_SPRITE_REL_PATH: &str = "assets/sprites/platform_green_single.png";
+const PLATFORM_GREEN_SINGLE_SPRITE_REL_PATH: &str = "assets/sprites/platform_green_single.png";
+const SLIME_GREEN_SINGLE_SPRITE_REL_PATH: &str = "assets/sprites/slime_green_single.png";
 
 pub fn tick_obstacle_spawn_timer(
     mut obstacle_spawn_timer: ResMut<ObstacleSpawnTimer>,
@@ -26,23 +24,25 @@ pub fn spawn_obstacles_over_time(
     if obstacle_spawn_timer.timer.finished() {
         let y_of_ground = get_y_of_ground(window_dimensions.height);
 
-        let image_size = imagesize::size(SINGLE_PLATFORM_SPRITE_REL_PATH)
+        let image_size = imagesize::size(SLIME_GREEN_SINGLE_SPRITE_REL_PATH)
             .expect("Can get imagesize of single platform sprite");
 
-        let platform_sprite_bevy_path = SINGLE_PLATFORM_SPRITE_REL_PATH
+        let platform_sprite_bevy_path = SLIME_GREEN_SINGLE_SPRITE_REL_PATH
             .split("/")
             .collect::<Vec<&str>>()[1..]
             .join("/");
+
+        let scaled_image_width = (image_size.width * 2) as f32;
+        let scaled_image_height = (image_size.height * 2) as f32;
+
         commands.spawn((
             Sprite {
                 image: asset_server.load(platform_sprite_bevy_path),
+                custom_size: Some(vec2(scaled_image_width, scaled_image_height)),
                 ..default()
             },
-            Transform::from_xyz(50.0, y_of_ground + PLAYER_COLLIDER_RADIUS, 0.0),
-            Collider::cuboid(
-                (image_size.width / 2) as f32,
-                (image_size.height / 2) as f32,
-            ),
+            Transform::from_xyz(50.0, y_of_ground + image_size.height as f32, 0.0),
+            Collider::cuboid(scaled_image_width / 2.0, scaled_image_height / 2.0),
             Platform,
         ));
     }

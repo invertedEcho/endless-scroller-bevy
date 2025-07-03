@@ -7,6 +7,7 @@ use scrolling_background::ScrollingBackgroundPlugin;
 use states::GameState;
 use systems::{on_resize_system, spawn_camera};
 
+mod components;
 mod obstacle;
 mod physics;
 mod player;

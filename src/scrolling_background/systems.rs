@@ -7,7 +7,7 @@ use crate::{
     utils::{get_left_edge_of_window, get_num_tiles},
 };
 
-const SCROLLING_SPEED: f32 = 100.0;
+const SCROLLING_SPEED: f32 = 200.0;
 
 const BACKGROUND_IMAGE_PATH: &str = "sprites/background.png";
 
