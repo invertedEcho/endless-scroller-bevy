@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use systems::{check_if_player_dead, jump_knight_system, spawn_player};
+use systems::{check_if_player_dead, despawn_player, jump_knight_system, spawn_player};
 
 use crate::states::GameState;
 
@@ -13,10 +13,11 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::PLAYING), spawn_player)
+        app.add_systems(OnEnter(GameState::Playing), spawn_player)
             .add_systems(
                 Update,
-                (jump_knight_system, check_if_player_dead).run_if(in_state(GameState::PLAYING)),
-            );
+                (jump_knight_system, check_if_player_dead).run_if(in_state(GameState::Playing)),
+            )
+            .add_systems(OnExit(GameState::Playing), despawn_player);
     }
 }

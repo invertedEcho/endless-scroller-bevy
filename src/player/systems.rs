@@ -74,6 +74,11 @@ pub fn check_if_player_dead(
 
     if player_translation_x < left_edge_window {
         println!("Player dead!");
-        next_game_state.set(GameState::DEAD);
+        next_game_state.set(GameState::Dead);
     }
+}
+
+pub fn despawn_player(mut commands: Commands, player_query: Query<Entity, With<Player>>) {
+    let player_entity = player_query.single().expect("Exactly one player exists");
+    commands.entity(player_entity).despawn();
 }

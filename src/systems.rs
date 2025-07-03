@@ -57,7 +57,7 @@ pub fn on_resize_system(
         relevant_for_move_y.translation.y = y_of_ground;
     }
 
-    if game_state.get() == &GameState::PLAYING {
+    if game_state.get() == &GameState::Playing {
         let mut player = player_query
             .single_mut()
             .expect("Exactly one player exists");

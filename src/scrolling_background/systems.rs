@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    obstacle::components::Platform,
+    obstacle::components::GreenSlime,
     resources::WindowDimensions,
     scrolling_background::components::BackgroundImage,
     states::GameState,
@@ -70,9 +70,9 @@ pub fn scroll_background_images(
     time: Res<Time>,
     mut scrolling_background_query: Query<
         (&mut Transform, &BackgroundImage),
-        (With<BackgroundImage>, Without<Platform>),
+        (With<BackgroundImage>, Without<GreenSlime>),
     >,
-    mut platform_query: Query<&mut Transform, (With<Platform>, Without<BackgroundImage>)>,
+    mut platform_query: Query<&mut Transform, (With<GreenSlime>, Without<BackgroundImage>)>,
     window_dimensions: Res<WindowDimensions>,
 ) {
     let scrolling_speed = get_scrolling_speed(game_state.get());

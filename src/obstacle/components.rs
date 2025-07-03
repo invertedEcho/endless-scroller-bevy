@@ -1,4 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct Platform;
+pub struct Obstacle;
+
+#[derive(Component)]
+pub struct GreenSlime;

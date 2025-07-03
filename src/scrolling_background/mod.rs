@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 use systems::{scroll_background_images, spawn_background_images};
 
-use crate::states::GameState;
-
 pub mod components;
 mod systems;
 mod utils;
