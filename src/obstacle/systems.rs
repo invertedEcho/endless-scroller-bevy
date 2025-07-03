@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{obstacle::components::Platform, resources::WindowDimensions, utils::get_y_of_ground};
+use crate::{
+    obstacle::components::Platform, resources::WindowDimensions, states::GameState,
+    utils::get_y_of_ground,
+};
 
 use super::resources::ObstacleSpawnTimer;
 
@@ -44,6 +47,17 @@ pub fn spawn_obstacles_over_time(
             Transform::from_xyz(50.0, y_of_ground + image_size.height as f32, 0.0),
             Collider::cuboid(scaled_image_width / 2.0, scaled_image_height / 2.0),
             Platform,
+            ActiveEvents::COLLISION_EVENTS,
         ));
+    }
+}
+
+pub fn handle_collision_event(
+    mut reader: EventReader<CollisionEvent>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+) {
+    for event in reader.read() {
+        println!("collision event: {:?}", event);
+        next_game_state.set(GameState::DEAD);
     }
 }
