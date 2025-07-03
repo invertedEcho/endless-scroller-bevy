@@ -1,34 +1,30 @@
 use bevy::{prelude::*, window::WindowResized};
 
+use crate::components::RelevantForMoveY;
 use crate::player::components::Player;
+use crate::player::utils::get_player_ball_radius;
 use crate::resources::WindowDimensions;
 use crate::scrolling_background::components::ScrollingBackground;
 use crate::utils::get_y_of_ground;
-
-use crate::physics::components::GroundCollider;
-
-use crate::player::PLAYER_COLLIDER_RADIUS;
 
 // TODO: Split up this function into multiple
 pub fn on_resize_system(
     mut window_resized_event_reader: EventReader<WindowResized>,
     mut window_dimensions: ResMut<WindowDimensions>,
-    mut ground_collider_query: Query<&mut Transform, With<GroundCollider>>,
-    // TODO: I think we can solve this mess with using system sets
     mut scrolling_background_query: Query<
         (&mut ScrollingBackground, &mut Sprite, &mut Transform),
-        (
-            With<ScrollingBackground>,
-            Without<Player>,
-            Without<GroundCollider>,
-        ),
+        (With<ScrollingBackground>, Without<RelevantForMoveY>),
+    >,
+    mut relevant_for_move_y_query: Query<
+        &mut Transform,
+        (With<RelevantForMoveY>, Without<ScrollingBackground>),
     >,
     mut player_query: Query<
         &mut Transform,
         (
             With<Player>,
+            Without<RelevantForMoveY>,
             Without<ScrollingBackground>,
-            Without<GroundCollider>,
         ),
     >,
 ) {
@@ -54,15 +50,15 @@ pub fn on_resize_system(
 
     let y_of_ground = get_y_of_ground(new_window_height);
 
-    let mut ground_collider = ground_collider_query
-        .single_mut()
-        .expect("Exactly one ground collider exists");
-    ground_collider.translation.y = y_of_ground;
+    for mut relevant_for_move_y in relevant_for_move_y_query.iter_mut() {
+        relevant_for_move_y.translation.y = y_of_ground;
+    }
 
     let mut player = player_query
         .single_mut()
         .expect("Exactly one player exists");
-    player.translation.y = y_of_ground + PLAYER_COLLIDER_RADIUS;
+    let player_ball_radius = get_player_ball_radius() as f32;
+    player.translation.y = y_of_ground + player_ball_radius;
 
     let scrolling_backgrounds_sorted =
         scrolling_background_query

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+/// TODO: Why not just use `Query<&Window, With<PrimaryWindow>>` ?!
 #[derive(Resource)]
 pub struct WindowDimensions {
     pub width: f32,
