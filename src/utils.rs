@@ -18,3 +18,10 @@ pub fn get_num_tiles(window_width: f32, scaled_image_width: f32) -> usize {
 pub fn get_left_edge_of_window(window_width: f32) -> f32 {
     -(window_width / 2.0)
 }
+
+pub fn get_asset_path_formatted_for_bevy(path: String) -> String {
+    if !path.starts_with("assets/") {
+        return path;
+    }
+    return path.split("/").collect::<Vec<&str>>()[1..].join("/");
+}

@@ -5,7 +5,7 @@ use crate::{components::RelevantForMoveY, resources::WindowDimensions, utils::ge
 
 use super::components::GroundCollider;
 
-pub fn spawn_ground_collidier(mut commands: Commands, window_dimensions: Res<WindowDimensions>) {
+pub fn spawn_ground(mut commands: Commands, window_dimensions: Res<WindowDimensions>) {
     let y_of_ground = get_y_of_ground(window_dimensions.height);
 
     commands.spawn((
