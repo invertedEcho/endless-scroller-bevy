@@ -8,3 +8,6 @@ pub struct DeadMenu;
 
 #[derive(Component)]
 pub struct PlayButton;
+
+#[derive(Component)]
+pub struct ScoreText;

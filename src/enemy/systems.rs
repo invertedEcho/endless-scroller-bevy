@@ -2,32 +2,29 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    obstacle::components::GreenSlime, resources::WindowDimensions, states::GameState,
-    utils::get_y_of_ground,
+    components::RelevantForMoveY, enemy::components::Enemy, resources::WindowDimensions,
+    states::GameState, utils::get_y_of_ground,
 };
 
-use super::{components::Obstacle, resources::ObstacleSpawnTimer};
+use super::{
+    SLIME_GREEN_SINGLE_SPRITE_REL_PATH, resources::EnemySpawnTimer,
+    utils::get_image_size_enemy_sprite,
+};
 
-const SLIME_GREEN_SINGLE_SPRITE_REL_PATH: &str = "assets/sprites/slime_green_single.png";
-
-pub fn tick_obstacle_spawn_timer(
-    mut obstacle_spawn_timer: ResMut<ObstacleSpawnTimer>,
-    time: Res<Time>,
-) {
-    obstacle_spawn_timer.timer.tick(time.delta());
+pub fn tick_enemy_spawn_timer(mut enemy_spawn_timer: ResMut<EnemySpawnTimer>, time: Res<Time>) {
+    enemy_spawn_timer.timer.tick(time.delta());
 }
 
-pub fn spawn_obstacles_over_time(
+pub fn spawn_enemies_over_time(
     asset_server: Res<AssetServer>,
     mut commands: Commands,
     window_dimensions: Res<WindowDimensions>,
-    obstacle_spawn_timer: Res<ObstacleSpawnTimer>,
+    enemy_spawn_timer: Res<EnemySpawnTimer>,
 ) {
-    if obstacle_spawn_timer.timer.finished() {
+    if enemy_spawn_timer.timer.finished() {
         let y_of_ground = get_y_of_ground(window_dimensions.height);
 
-        let image_size = imagesize::size(SLIME_GREEN_SINGLE_SPRITE_REL_PATH)
-            .expect("Can get imagesize of single platform sprite");
+        let image_size = get_image_size_enemy_sprite();
 
         let slime_green_sprite_bevy_path = SLIME_GREEN_SINGLE_SPRITE_REL_PATH
             .split("/")
@@ -45,9 +42,9 @@ pub fn spawn_obstacles_over_time(
             },
             Transform::from_xyz(150.0, y_of_ground + image_size.height as f32, 0.0),
             Collider::cuboid(scaled_image_width / 2.0, scaled_image_height / 2.0),
-            GreenSlime,
-            Obstacle,
+            Enemy::default(),
             ActiveEvents::COLLISION_EVENTS,
+            RelevantForMoveY,
         ));
     }
 }
@@ -67,8 +64,8 @@ pub fn handle_collision_event(
     }
 }
 
-pub fn despawn_obstacles(mut commands: Commands, obstacle_query: Query<Entity, With<Obstacle>>) {
-    for obstacle in obstacle_query {
-        commands.entity(obstacle).despawn();
+pub fn despawn_enemies(mut commands: Commands, enemy_query: Query<Entity, With<Enemy>>) {
+    for enemy in enemy_query {
+        commands.entity(enemy).despawn();
     }
 }
