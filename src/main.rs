@@ -1,7 +1,8 @@
 use crate::resources::WindowDimensions;
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 use enemy::EnemyPlugin;
-use physics::PhysicsPlugin;
+use ground::GroundPlugin;
 use player::PlayerPlugin;
 use score::ScorePlugin;
 use scrolling_background::ScrollingBackgroundPlugin;
@@ -11,7 +12,7 @@ use ui::UiPlugin;
 
 mod components;
 mod enemy;
-mod physics;
+mod ground;
 mod player;
 mod resources;
 mod score;
@@ -24,8 +25,10 @@ mod utils;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(UiPlugin)
-        .add_plugins(PhysicsPlugin)
+        .add_plugins(GroundPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(ScrollingBackgroundPlugin)
         .add_plugins(EnemyPlugin)

@@ -2,8 +2,11 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    components::RelevantForMoveY, enemy::components::Enemy, resources::WindowDimensions,
-    states::GameState, utils::get_y_of_ground,
+    components::RelevantForMoveY,
+    enemy::components::Enemy,
+    resources::WindowDimensions,
+    states::GameState,
+    utils::{get_asset_path_formatted_for_bevy, get_y_of_ground},
 };
 
 use super::{
@@ -26,10 +29,8 @@ pub fn spawn_enemies_over_time(
 
         let image_size = get_image_size_enemy_sprite();
 
-        let slime_green_sprite_bevy_path = SLIME_GREEN_SINGLE_SPRITE_REL_PATH
-            .split("/")
-            .collect::<Vec<&str>>()[1..]
-            .join("/");
+        let slime_green_sprite_bevy_path =
+            get_asset_path_formatted_for_bevy(SLIME_GREEN_SINGLE_SPRITE_REL_PATH.to_string());
 
         let scaled_image_width = (image_size.width * 2) as f32;
         let scaled_image_height = (image_size.height * 2) as f32;
