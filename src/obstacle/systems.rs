@@ -2,13 +2,12 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    obstacle::components::Platform, resources::WindowDimensions, states::GameState,
+    obstacle::components::GreenSlime, resources::WindowDimensions, states::GameState,
     utils::get_y_of_ground,
 };
 
-use super::resources::ObstacleSpawnTimer;
+use super::{components::Obstacle, resources::ObstacleSpawnTimer};
 
-const PLATFORM_GREEN_SINGLE_SPRITE_REL_PATH: &str = "assets/sprites/platform_green_single.png";
 const SLIME_GREEN_SINGLE_SPRITE_REL_PATH: &str = "assets/sprites/slime_green_single.png";
 
 pub fn tick_obstacle_spawn_timer(
@@ -30,7 +29,7 @@ pub fn spawn_obstacles_over_time(
         let image_size = imagesize::size(SLIME_GREEN_SINGLE_SPRITE_REL_PATH)
             .expect("Can get imagesize of single platform sprite");
 
-        let platform_sprite_bevy_path = SLIME_GREEN_SINGLE_SPRITE_REL_PATH
+        let slime_green_sprite_bevy_path = SLIME_GREEN_SINGLE_SPRITE_REL_PATH
             .split("/")
             .collect::<Vec<&str>>()[1..]
             .join("/");
@@ -40,13 +39,14 @@ pub fn spawn_obstacles_over_time(
 
         commands.spawn((
             Sprite {
-                image: asset_server.load(platform_sprite_bevy_path),
+                image: asset_server.load(slime_green_sprite_bevy_path),
                 custom_size: Some(vec2(scaled_image_width, scaled_image_height)),
                 ..default()
             },
-            Transform::from_xyz(50.0, y_of_ground + image_size.height as f32, 0.0),
+            Transform::from_xyz(150.0, y_of_ground + image_size.height as f32, 0.0),
             Collider::cuboid(scaled_image_width / 2.0, scaled_image_height / 2.0),
-            Platform,
+            GreenSlime,
+            Obstacle,
             ActiveEvents::COLLISION_EVENTS,
         ));
     }
@@ -57,7 +57,18 @@ pub fn handle_collision_event(
     mut next_game_state: ResMut<NextState<GameState>>,
 ) {
     for event in reader.read() {
-        println!("collision event: {:?}", event);
-        next_game_state.set(GameState::DEAD);
+        match event {
+            CollisionEvent::Started(_, _, _) => {
+                // TODO: Not all collision events mean player is dead
+                next_game_state.set(GameState::Dead);
+            }
+            _ => {}
+        }
+    }
+}
+
+pub fn despawn_obstacles(mut commands: Commands, obstacle_query: Query<Entity, With<Obstacle>>) {
+    for obstacle in obstacle_query {
+        commands.entity(obstacle).despawn();
     }
 }
